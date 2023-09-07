@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 type ProductCategory = "Fruits" | "Vegetables";
 
@@ -86,8 +86,12 @@ function ProductTable({
   filterText,
   inStockOnly,
 }: ProductTableProps) {
-  const filteredProducts = products.filter((product) =>
-    productFilter(product, filterText, inStockOnly)
+  const filteredProducts = useMemo(
+    () =>
+      products.filter((product) =>
+        productFilter(product, filterText, inStockOnly)
+      ),
+    [products, filterText, inStockOnly]
   );
   const groupedProducts = groupProductsByCategory(filteredProducts);
   const rows = Array.from(groupedProducts.entries()).flatMap(

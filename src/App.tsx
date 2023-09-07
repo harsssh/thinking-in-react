@@ -101,7 +101,12 @@ function Searchbar({
         onChange={(e) => onFilterTextChange(e.target.value)}
       />
       <label>
-        <input type="checkbox" /> Only show productss in stock
+        <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => onInStockOnlyChange(e.target.checked)}
+        />
+        Only show productss in stock
       </label>
     </form>
   );

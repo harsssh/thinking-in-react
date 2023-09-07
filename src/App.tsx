@@ -11,14 +11,17 @@ type Product = {
 
 type FilterableProductTableState = {
   filterText: string;
-  onInStockOnlyChange: React.Dispatch<React.SetStateAction<boolean>>;
   inStockOnly: boolean;
+};
+
+type SearchbarProps = FilterableProductTableState & {
+  onInStockOnlyChange: React.Dispatch<React.SetStateAction<boolean>>;
   onFilterTextChange: React.Dispatch<React.SetStateAction<string>>;
 };
 
-type SearchbarProps = {} & FilterableProductTableState;
-
-type ProductTableProps = { products: Product[] } & FilterableProductTableState;
+type ProductTableProps = FilterableProductTableState & {
+  products: Product[];
+};
 
 const PRODUCTS: Product[] = [
   { category: "Fruits", price: "$1", stocked: true, name: "Apple" },
@@ -29,7 +32,7 @@ const PRODUCTS: Product[] = [
   { category: "Vegetables", price: "$1", stocked: true, name: "Peas" },
 ];
 
-function ProductCatagoryRow({ category }: Pick<Product, "category">) {
+function ProductCategoryRow({ category }: Pick<Product, "category">) {
   return (
     <tr>
       <th colSpan={2}>{category}</th>
@@ -52,26 +55,42 @@ function ProductRow({ product }: { product: Product }) {
   );
 }
 
+const groupProductsByCategory = (
+  products: Product[]
+): Map<ProductCategory, Product[]> => {
+  const grouped = new Map<ProductCategory, Product[]>();
+  products.forEach((product) => {
+    const categoryProducts = grouped.get(product.category) || [];
+    categoryProducts.push(product);
+    grouped.set(product.category, categoryProducts);
+  });
+  return grouped;
+};
+
+const filterProductsByName = (products: Product[], filterText: string) => {
+  const lowerFilterText = filterText.toLowerCase().trim();
+  return products.filter((product) =>
+    product.name.toLowerCase().includes(lowerFilterText)
+  );
+};
+
 function ProductTable({
   products,
   filterText,
   inStockOnly,
 }: ProductTableProps) {
-  const rows: JSX.Element[] = [];
-  let lastCategory: ProductCategory | null = null;
+  if (inStockOnly) products = products.filter((product) => product.stocked);
+  if (filterText) products = filterProductsByName(products, filterText);
 
-  products.forEach((product) => {
-    if (product.category !== lastCategory) {
-      rows.push(
-        <ProductCatagoryRow
-          category={product.category}
-          key={product.category}
-        />
-      );
-    }
-    rows.push(<ProductRow product={product} key={product.name} />);
-    lastCategory = product.category;
-  });
+  const groupedProducts = groupProductsByCategory(products);
+  const rows = Array.from(groupedProducts.entries()).flatMap(
+    ([category, products]) => [
+      <ProductCategoryRow key={category} category={category} />,
+      ...products.map((product) => (
+        <ProductRow key={product.name} product={product} />
+      )),
+    ]
+  );
 
   return (
     <table>
@@ -129,8 +148,6 @@ function FilterableProductTable({ products }: { products: Product[] }) {
         products={products}
         filterText={filterText}
         inStockOnly={inStockOnly}
-        onFilterTextChange={setFilterText}
-        onInStockOnlyChange={setInStockOnly}
       />
     </div>
   );

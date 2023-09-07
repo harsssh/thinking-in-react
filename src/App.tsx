@@ -114,6 +114,6 @@ function FilterableProductTable({ products }: { products: Product[] }) {
   );
 }
 
-function App() {
+export default function App() {
   return <FilterableProductTable products={PRODUCTS} />;
 }

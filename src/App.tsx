@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+
 type ProductCategory = "Fruits" | "Vegetables";
 
 type Product = {
@@ -7,16 +9,15 @@ type Product = {
   name: string;
 };
 
-type ProductRowProps = {
-  product: Product;
+type SearchbarProps = {
+  filterText: string;
+  inStockOnly: boolean;
 };
 
 type ProductTableProps = {
   products: Product[];
-};
-
-type FilterableProductTableProps = {
-  products: Product[];
+  filterText: string;
+  inStockOnly: boolean;
 };
 
 const PRODUCTS: Product[] = [
@@ -36,7 +37,7 @@ function ProductCatagoryRow({ category }: Pick<Product, "category">) {
   );
 }
 
-function ProductRow({ product }: ProductRowProps) {
+function ProductRow({ product }: { product: Product }) {
   const name = product.stocked ? (
     product.name
   ) : (
@@ -51,7 +52,11 @@ function ProductRow({ product }: ProductRowProps) {
   );
 }
 
-function ProductTable({ products }: ProductTableProps) {
+function ProductTable({
+  products,
+  filterText,
+  inStockOnly,
+}: ProductTableProps) {
   const rows: JSX.Element[] = [];
   let lastCategory: ProductCategory | null = null;
 
@@ -81,10 +86,10 @@ function ProductTable({ products }: ProductTableProps) {
   );
 }
 
-function Searchbar() {
+function Searchbar({ filterText, inStockOnly }: SearchbarProps) {
   return (
     <form>
-      <input type="text" placeholder="Search..." />
+      <input type="text" placeholder="Search..." value={filterText} />
       <label>
         <input type="checkbox" /> Only show productss in stock
       </label>
@@ -92,11 +97,19 @@ function Searchbar() {
   );
 }
 
-function FilterableProductTable({ products }: FilterableProductTableProps) {
+// Searchbarの検索テキスト, チェックボックスの状態を持つ
+function FilterableProductTable({ products }: { products: Product[] }) {
+  const [filterText, setFilterText] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
+
   return (
     <div>
-      <Searchbar />
-      <ProductTable products={products} />
+      <Searchbar filterText={filterText} inStockOnly={inStockOnly} />
+      <ProductTable
+        products={products}
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+      />
     </div>
   );
 }
@@ -104,5 +117,3 @@ function FilterableProductTable({ products }: FilterableProductTableProps) {
 function App() {
   return <FilterableProductTable products={PRODUCTS} />;
 }
-
-export default App;
